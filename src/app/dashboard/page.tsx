@@ -3,6 +3,7 @@
 import { authClient } from "~/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
+import type { Holding, Transaction, ChartDataPoint } from "~/types";
 import {
   Card,
   CardContent,
@@ -51,18 +52,18 @@ export default function Dashboard() {
     return null;
   }
 
-  const chartData =
-    portfolio?.holdings.map((h: any) => ({
+  const chartData: ChartDataPoint[] =
+    (portfolio?.holdings as Holding[] | undefined)?.map((h) => ({
       name: h.symbol,
       value: h.quantity * h.avgPrice,
-    })) || [];
+    })) ?? [];
 
   const chartConfig = {
     value: {
       label: "Value",
     },
     ...Object.fromEntries(
-      chartData.map((d: any, i: number) => [
+      chartData.map((d, i: number) => [
         d.name,
         { label: d.name, color: `var(--chart-${(i % 5) + 1})` },
       ]),
@@ -141,7 +142,7 @@ export default function Dashboard() {
                 $
                 {portfolio?.holdings
                   .reduce(
-                    (acc: number, curr: any) =>
+                    (acc: number, curr: Holding) =>
                       acc + curr.quantity * curr.avgPrice,
                     0,
                   )
@@ -174,7 +175,7 @@ export default function Dashboard() {
                       innerRadius={60}
                       strokeWidth={5}
                     >
-                      {chartData.map((entry: any, index: number) => (
+                      {chartData.map((entry, index: number) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={COLORS[index % COLORS.length]}
@@ -206,7 +207,7 @@ export default function Dashboard() {
                 {transactionsLoading ? (
                   <p>Loading...</p>
                 ) : transactions && transactions.length > 0 ? (
-                  transactions.map((tx: any) => (
+                  transactions.map((tx: Transaction) => (
                     <div key={tx._id} className="flex items-center">
                       <div className="space-y-1">
                         <p className="text-sm leading-none font-medium">

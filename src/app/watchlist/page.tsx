@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
+import type { WatchlistItem } from "~/types";
 import {
   Table,
   TableBody,
@@ -19,11 +20,11 @@ import { toast } from "sonner";
 import { Line, LineChart, ResponsiveContainer, YAxis } from "recharts";
 
 // Component to fetch and display price for a single symbol
-const WatchlistItem = ({
+const WatchlistItemRow = ({
   item,
   onRemove,
 }: {
-  item: any;
+  item: WatchlistItem;
   onRemove: () => void;
 }) => {
   const quote = api.stock.getQuote.useQuery(
@@ -177,8 +178,8 @@ export default function WatchlistPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {watchlist.map((item: any) => (
-                  <WatchlistItem
+                {watchlist.map((item: WatchlistItem) => (
+                  <WatchlistItemRow
                     key={item._id}
                     item={item}
                     onRemove={() =>

@@ -3,6 +3,7 @@ import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import clientPromise, { dbName } from "~/lib/db";
 import nodemailer from "nodemailer";
 import { env } from "~/env";
+import type { BetterAuthUser } from "~/types";
 
 const client = await clientPromise;
 const db = client.db(dbName);
@@ -31,7 +32,7 @@ export const auth = betterAuth({
       user,
       url,
     }: {
-      user: any;
+      user: BetterAuthUser;
       url: string;
     }) => {
       await transporter.sendMail({
@@ -43,7 +44,7 @@ export const auth = betterAuth({
     },
   },
   passwordReset: {
-    sendResetPassword: async ({ user, url }: { user: any; url: string }) => {
+    sendResetPassword: async ({ user, url }: { user: BetterAuthUser; url: string }) => {
       await transporter.sendMail({
         from: `"Foliomate" <${env.GMAIL_USER}>`,
         to: user.email,

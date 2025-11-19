@@ -1,103 +1,103 @@
-import { headers } from "next/headers";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-
-import { LatestPost } from "~/app/_components/post";
-import { auth } from "~/server/better-auth";
 import { getSession } from "~/server/better-auth/server";
-import { api, HydrateClient } from "~/trpc/server";
 
 export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
   const session = await getSession();
 
-  if (session) {
-    void api.post.getLatest.prefetch();
-  }
-
   return (
-    <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-          </h1>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
+    <main className="flex min-h-screen flex-col bg-gradient-to-b from-[#1a1b26] to-[#15162c] text-white">
+      {/* Navbar */}
+      <nav className="container mx-auto flex items-center justify-between p-6">
+        <div className="text-2xl font-bold tracking-tighter">
+          <span className="text-blue-400">Folio</span>mate
+        </div>
+        <div className="flex gap-4">
+          {session ? (
             <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/usage/first-steps"
-              target="_blank"
+              href="/dashboard"
+              className="rounded-full bg-blue-500 px-6 py-2 font-semibold text-white transition hover:bg-blue-600"
             >
-              <h3 className="text-2xl font-bold">First Steps →</h3>
-              <div className="text-lg">
-                Just the basics - Everything you need to know to set up your
-                database and authentication.
-              </div>
+              Dashboard
             </Link>
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/introduction"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">Documentation →</h3>
-              <div className="text-lg">
-                Learn more about Create T3 App, the libraries it uses, and how
-                to deploy it.
-              </div>
-            </Link>
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-              {hello ? hello.greeting : "Loading tRPC query..."}
-            </p>
+          ) : (
+            <>
+              <Link
+                href="/sign-in"
+                className="rounded-full px-6 py-2 font-semibold text-white transition hover:bg-white/10"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/sign-up"
+                className="rounded-full bg-blue-500 px-6 py-2 font-semibold text-white transition hover:bg-blue-600"
+              >
+                Get Started
+              </Link>
+            </>
+          )}
+        </div>
+      </nav>
 
-            <div className="flex flex-col items-center justify-center gap-4">
-              <p className="text-center text-2xl text-white">
-                {session && <span>Logged in as {session.user?.name}</span>}
+      {/* Hero Section */}
+      <div className="container mx-auto flex flex-1 flex-col items-center justify-center px-4 py-16 text-center">
+        <h1 className="mb-6 text-5xl font-extrabold tracking-tight sm:text-[5rem]">
+          Master Your <span className="text-blue-400">Portfolio</span>
+        </h1>
+        <p className="mb-8 max-w-2xl text-lg text-gray-300 sm:text-xl">
+          Real-time stock tracking, virtual trading, and powerful portfolio management tools.
+          Experience the future of personal finance with Foliomate.
+        </p>
+
+        <div className="flex flex-col gap-4 sm:flex-row">
+          <Link
+            href={session ? "/dashboard" : "/sign-up"}
+            className="rounded-full bg-blue-500 px-8 py-3 text-lg font-semibold text-white transition hover:bg-blue-600"
+          >
+            {session ? "Go to Dashboard" : "Start Trading Now"}
+          </Link>
+          <Link
+            href="#features"
+            className="rounded-full bg-white/10 px-8 py-3 text-lg font-semibold text-white transition hover:bg-white/20"
+          >
+            Learn More
+          </Link>
+        </div>
+      </div>
+
+      {/* Features Section */}
+      <div id="features" className="bg-black/20 py-20">
+        <div className="container mx-auto px-4">
+          <h2 className="mb-12 text-center text-3xl font-bold">Why Foliomate?</h2>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="rounded-xl bg-white/5 p-6 hover:bg-white/10 transition">
+              <div className="mb-4 text-4xl">📈</div>
+              <h3 className="mb-2 text-xl font-bold">Real-Time Data</h3>
+              <p className="text-gray-400">
+                Get up-to-the-minute stock prices and market data powered by Alpha Vantage.
               </p>
-              {!session ? (
-                <form>
-                  <button
-                    className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-                    formAction={async () => {
-                      "use server";
-                      const res = await auth.api.signInSocial({
-                        body: {
-                          provider: "github",
-                          callbackURL: "/",
-                        },
-                      });
-                      if (!res.url) {
-                        throw new Error("No URL returned from signInSocial");
-                      }
-                      redirect(res.url);
-                    }}
-                  >
-                    Sign in with Github
-                  </button>
-                </form>
-              ) : (
-                <form>
-                  <button
-                    className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-                    formAction={async () => {
-                      "use server";
-                      await auth.api.signOut({
-                        headers: await headers(),
-                      });
-                      redirect("/");
-                    }}
-                  >
-                    Sign out
-                  </button>
-                </form>
-              )}
+            </div>
+            <div className="rounded-xl bg-white/5 p-6 hover:bg-white/10 transition">
+              <div className="mb-4 text-4xl">💼</div>
+              <h3 className="mb-2 text-xl font-bold">Portfolio Tracking</h3>
+              <p className="text-gray-400">
+                Monitor your holdings, track performance, and manage your virtual cash.
+              </p>
+            </div>
+            <div className="rounded-xl bg-white/5 p-6 hover:bg-white/10 transition">
+              <div className="mb-4 text-4xl">⚡</div>
+              <h3 className="mb-2 text-xl font-bold">Instant Execution</h3>
+              <p className="text-gray-400">
+                Buy and sell stocks instantly with our seamless trading interface.
+              </p>
             </div>
           </div>
-
-          {session?.user && <LatestPost />}
         </div>
-      </main>
-    </HydrateClient>
+      </div>
+
+      {/* Footer */}
+      <footer className="py-8 text-center text-gray-500">
+        <p>&copy; {new Date().getFullYear()} Foliomate. All rights reserved.</p>
+      </footer>
+    </main>
   );
 }

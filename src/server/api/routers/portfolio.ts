@@ -11,15 +11,7 @@ export const portfolioRouter = createTRPCRouter({
         const userId = ctx.session.user.id;
 
         const portfolio = await db.collection("portfolios").find({ userId }).toArray();
-        // Calculate total value, etc. if needed.
-        // For now, just return the holdings.
 
-        // Also get cash balance
-        // Assuming we store cash in a separate collection or user document.
-        // Let's assume user document has 'cash' field, or we create a 'wallets' collection.
-        // For simplicity, let's store cash in 'portfolios' collection as a special entry or just use a 'wallets' collection.
-
-        // Let's use a 'wallets' collection.
         const wallet = await db.collection("wallets").findOne({ userId });
         const cash = wallet ? wallet.cash : 10000; // Default 10k virtual cash
 
@@ -154,5 +146,26 @@ export const portfolioRouter = createTRPCRouter({
             });
 
             return { success: true };
+        }),
+
+    getTransactions: protectedProcedure
+        .input(z.object({ limit: z.number().optional() }).optional())
+        .query(async ({ ctx, input }) => {
+            const client = await clientPromise;
+            const db = client.db(dbName);
+            const userId = ctx.session.user.id;
+
+            let cursor = db
+                .collection("transactions")
+                .find({ userId })
+                .sort({ date: -1 });
+
+            if (input?.limit) {
+                cursor = cursor.limit(input.limit);
+            }
+
+            const transactions = await cursor.toArray();
+
+            return transactions;
         }),
 });

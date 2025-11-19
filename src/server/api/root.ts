@@ -7,10 +7,14 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
  * All routers added in /api/routers should be manually added here.
  */
 import { stockRouter } from "~/server/api/routers/stock";
+import { portfolioRouter } from "~/server/api/routers/portfolio";
+import { watchlistRouter } from "~/server/api/routers/watchlist";
 
 export const appRouter = createTRPCRouter({
   post: postRouter,
   stock: stockRouter,
+  portfolio: portfolioRouter,
+  watchlist: watchlistRouter,
 });
 
 // export type definition of API

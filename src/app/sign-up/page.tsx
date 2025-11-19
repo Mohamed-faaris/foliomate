@@ -13,7 +13,7 @@ export default function SignUp() {
   const router = useRouter();
 
   const signUp = async () => {
-    const { data, error } = await authClient.signUp.email(
+    await authClient.signUp.email(
       {
         email,
         password,

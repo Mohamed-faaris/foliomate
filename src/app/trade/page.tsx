@@ -32,7 +32,7 @@ export default function TradePage() {
   const buyMutation = api.portfolio.buyStock.useMutation({
     onSuccess: () => {
       toast.success("Buy successful!");
-      utils.portfolio.getPortfolio.invalidate();
+      void utils.portfolio.getPortfolio.invalidate();
       router.push("/dashboard");
     },
     onError: (error) => {
@@ -43,7 +43,7 @@ export default function TradePage() {
   const sellMutation = api.portfolio.sellStock.useMutation({
     onSuccess: () => {
       toast.success("Sell successful!");
-      utils.portfolio.getPortfolio.invalidate();
+      void utils.portfolio.getPortfolio.invalidate();
       router.push("/dashboard");
     },
     onError: (error) => {

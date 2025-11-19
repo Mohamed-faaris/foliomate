@@ -47,12 +47,12 @@ function VerifyEmailContent() {
             },
           },
         );
-      } catch (error) {
+      } catch {
         setStatus("error");
       }
     };
 
-    verify();
+    void verify();
   }, [token]);
 
   return (

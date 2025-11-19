@@ -7,7 +7,6 @@ import type { WatchlistItem } from "~/types";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -108,7 +107,7 @@ export default function WatchlistPage() {
   const addMutation = api.watchlist.addToWatchlist.useMutation({
     onSuccess: () => {
       setSymbol("");
-      utils.watchlist.getWatchlist.invalidate();
+      void utils.watchlist.getWatchlist.invalidate();
       toast.success("Stock added to watchlist");
     },
     onError: (error) => {
@@ -118,7 +117,7 @@ export default function WatchlistPage() {
 
   const removeMutation = api.watchlist.removeFromWatchlist.useMutation({
     onSuccess: () => {
-      utils.watchlist.getWatchlist.invalidate();
+      void utils.watchlist.getWatchlist.invalidate();
       toast.success("Stock removed from watchlist");
     },
     onError: (error) => {

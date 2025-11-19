@@ -20,7 +20,7 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from "~/components/ui/chart";
-import { Pie, PieChart, Cell, ResponsiveContainer } from "recharts";
+import { Pie, PieChart, Cell } from "recharts";
 
 export default function Dashboard() {
   const { data: session, isPending } = authClient.useSession();
@@ -140,9 +140,9 @@ export default function Dashboard() {
             <CardContent>
               <div className="text-2xl font-bold">
                 $
-                {portfolio?.holdings
-                  .reduce(
-                    (acc: number, curr: Holding) =>
+                {(portfolio?.holdings as Holding[] | undefined)
+                  ?.reduce(
+                    (acc, curr) =>
                       acc + curr.quantity * curr.avgPrice,
                     0,
                   )
@@ -207,7 +207,7 @@ export default function Dashboard() {
                 {transactionsLoading ? (
                   <p>Loading...</p>
                 ) : transactions && transactions.length > 0 ? (
-                  transactions.map((tx: Transaction) => (
+                  (transactions as Transaction[]).map((tx) => (
                     <div key={tx._id} className="flex items-center">
                       <div className="space-y-1">
                         <p className="text-sm leading-none font-medium">

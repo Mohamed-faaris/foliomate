@@ -2,7 +2,6 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import clientPromise, { dbName } from "~/lib/db";
-import { ObjectId } from "mongodb";
 
 export const portfolioRouter = createTRPCRouter({
   getPortfolio: protectedProcedure.query(async ({ ctx }) => {

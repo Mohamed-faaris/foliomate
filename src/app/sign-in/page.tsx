@@ -11,12 +11,12 @@ export default function SignIn() {
   const router = useRouter();
 
   const signIn = async () => {
-    const { data, error } = await authClient.signIn.email({
+    const { error } = await authClient.signIn.email({
       email,
       password,
     });
     if (error) {
-      setError(error.message || "An error occurred");
+      setError(error.message ?? "An error occurred");
     } else {
       router.push("/dashboard");
     }
@@ -56,7 +56,7 @@ export default function SignIn() {
           Sign In
         </button>
         <p className="mt-4 text-center text-sm">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <a href="/sign-up" className="text-blue-500 hover:underline">
             Sign Up
           </a>

@@ -1,4 +1,4 @@
-import "dotenv/config";
+
 import clientPromise, { dbName } from "../lib/db";
 
 async function main() {

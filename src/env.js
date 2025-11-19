@@ -11,6 +11,7 @@ export const env = createEnv({
       process.env.NODE_ENV === "production"
         ? z.string()
         : z.string().optional(),
+    BETTER_AUTH_URL: z.string().url().default("http://localhost:3000"),
     MONGODB_URI: z.string().url(),
     ALPHA_VANTAGE_API_KEY: z.string(),
     NODE_ENV: z
@@ -33,6 +34,7 @@ export const env = createEnv({
    */
   runtimeEnv: {
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
     MONGODB_URI: process.env.MONGODB_URI,
     ALPHA_VANTAGE_API_KEY: process.env.ALPHA_VANTAGE_API_KEY,
     NODE_ENV: process.env.NODE_ENV,

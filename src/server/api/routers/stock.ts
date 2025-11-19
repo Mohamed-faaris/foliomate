@@ -4,6 +4,51 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import clientPromise, { dbName } from "~/lib/db";
 
+// Helper to generate consistent mock data based on symbol
+const getMockPrice = (symbol: string) => {
+    let hash = 0;
+    for (let i = 0; i < symbol.length; i++) {
+        hash = symbol.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    // Map hash to a price between 10 and 1000
+    return 10 + (Math.abs(hash) % 990);
+};
+
+const getMockQuote = (symbol: string) => {
+    const price = getMockPrice(symbol);
+    const isPositive = price % 2 === 0;
+    const change = price * 0.02 * (isPositive ? 1 : -1);
+
+    return {
+        symbol: symbol.toUpperCase(),
+        price: parseFloat(price.toFixed(2)),
+        change: parseFloat(change.toFixed(2)),
+        changePercent: (isPositive ? "+" : "") + (2.0).toFixed(2) + "%",
+    };
+};
+
+const getMockHistory = (symbol: string) => {
+    const basePrice = getMockPrice(symbol);
+    const history = [];
+    const today = new Date();
+
+    for (let i = 0; i < 30; i++) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+
+        // Random walk
+        const randomChange = (Math.random() - 0.5) * basePrice * 0.05;
+        const price = basePrice + randomChange;
+
+        history.push({
+            date: date.toISOString().split('T')[0],
+            price: parseFloat(price.toFixed(2)),
+        });
+    }
+
+    return history.reverse();
+};
+
 export const stockRouter = createTRPCRouter({
     search: protectedProcedure
         .input(z.object({ query: z.string().min(1) }))
@@ -12,11 +57,15 @@ export const stockRouter = createTRPCRouter({
             const response = await fetch(url);
             const data = await response.json();
 
-            if (data["Note"]) {
-                throw new TRPCError({
-                    code: "TOO_MANY_REQUESTS",
-                    message: "API limit reached",
-                });
+            if (data["Note"] || data["Information"]) {
+                console.warn("API limit reached, returning mock search results");
+                return [
+                    { symbol: "AAPL", name: "Apple Inc.", type: "Equity", region: "United States", currency: "USD" },
+                    { symbol: "MSFT", name: "Microsoft Corporation", type: "Equity", region: "United States", currency: "USD" },
+                    { symbol: "GOOGL", name: "Alphabet Inc.", type: "Equity", region: "United States", currency: "USD" },
+                    { symbol: "AMZN", name: "Amazon.com Inc.", type: "Equity", region: "United States", currency: "USD" },
+                    { symbol: "TSLA", name: "Tesla Inc.", type: "Equity", region: "United States", currency: "USD" },
+                ].filter(s => s.symbol.includes(input.query.toUpperCase()) || s.name.toLowerCase().includes(input.query.toLowerCase()));
             }
 
             if (!data["bestMatches"]) {
@@ -62,29 +111,28 @@ export const stockRouter = createTRPCRouter({
             const data = await response.json();
             console.log(`[getQuote] API response for ${symbol}:`, JSON.stringify(data));
 
-            if (data["Note"]) {
-                console.error(`[getQuote] API limit reached for ${symbol}`);
-                throw new TRPCError({
-                    code: "TOO_MANY_REQUESTS",
-                    message: "API limit reached",
-                });
-            }
+            let result;
 
-            const quote = data["Global Quote"];
-            if (!quote || Object.keys(quote).length === 0) {
-                console.error(`[getQuote] Stock not found: ${symbol}`);
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "Stock not found",
-                });
-            }
+            if (data["Note"] || data["Information"]) {
+                console.warn(`[getQuote] API limit reached for ${symbol}, using mock data`);
+                result = getMockQuote(symbol);
+            } else {
+                const quote = data["Global Quote"];
+                if (!quote || Object.keys(quote).length === 0) {
+                    console.error(`[getQuote] Stock not found: ${symbol}`);
+                    throw new TRPCError({
+                        code: "NOT_FOUND",
+                        message: "Stock not found",
+                    });
+                }
 
-            const result = {
-                symbol: quote["01. symbol"],
-                price: parseFloat(quote["05. price"]),
-                change: parseFloat(quote["09. change"]),
-                changePercent: quote["10. change percent"],
-            };
+                result = {
+                    symbol: quote["01. symbol"],
+                    price: parseFloat(quote["05. price"]),
+                    change: parseFloat(quote["09. change"]),
+                    changePercent: quote["10. change percent"],
+                };
+            }
 
             // Update cache
             await db.collection("stock_quotes").updateOne(
@@ -123,26 +171,26 @@ export const stockRouter = createTRPCRouter({
             const response = await fetch(url);
             const data = await response.json();
 
-            if (data["Note"]) {
-                throw new TRPCError({
-                    code: "TOO_MANY_REQUESTS",
-                    message: "API limit reached",
-                });
-            }
+            let historyData;
 
-            const timeSeries = data["Time Series (Daily)"];
-            if (!timeSeries) {
-                return [];
-            }
+            if (data["Note"] || data["Information"]) {
+                console.warn(`[getHistory] API limit reached for ${symbol}, using mock data`);
+                historyData = getMockHistory(symbol);
+            } else {
+                const timeSeries = data["Time Series (Daily)"];
+                if (!timeSeries) {
+                    return [];
+                }
 
-            // Get last 30 days and format
-            const historyData = Object.entries(timeSeries)
-                .slice(0, 30)
-                .map(([date, values]: [string, any]) => ({
-                    date,
-                    price: parseFloat(values["4. close"]),
-                }))
-                .reverse();
+                // Get last 30 days and format
+                historyData = Object.entries(timeSeries)
+                    .slice(0, 30)
+                    .map(([date, values]: [string, any]) => ({
+                        date,
+                        price: parseFloat(values["4. close"]),
+                    }))
+                    .reverse();
+            }
 
             // Update cache
             await db.collection("stock_history").updateOne(

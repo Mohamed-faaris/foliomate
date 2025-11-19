@@ -44,8 +44,9 @@ export default async function Home() {
           Master Your <span className="text-blue-400">Portfolio</span>
         </h1>
         <p className="mb-8 max-w-2xl text-lg text-gray-300 sm:text-xl">
-          Real-time stock tracking, virtual trading, and powerful portfolio management tools.
-          Experience the future of personal finance with Foliomate.
+          Real-time stock tracking, virtual trading, and powerful portfolio
+          management tools. Experience the future of personal finance with
+          Foliomate.
         </p>
 
         <div className="flex flex-col gap-4 sm:flex-row">
@@ -67,27 +68,32 @@ export default async function Home() {
       {/* Features Section */}
       <div id="features" className="bg-black/20 py-20">
         <div className="container mx-auto px-4">
-          <h2 className="mb-12 text-center text-3xl font-bold">Why Foliomate?</h2>
+          <h2 className="mb-12 text-center text-3xl font-bold">
+            Why Foliomate?
+          </h2>
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            <div className="rounded-xl bg-white/5 p-6 hover:bg-white/10 transition">
+            <div className="rounded-xl bg-white/5 p-6 transition hover:bg-white/10">
               <div className="mb-4 text-4xl">📈</div>
               <h3 className="mb-2 text-xl font-bold">Real-Time Data</h3>
               <p className="text-gray-400">
-                Get up-to-the-minute stock prices and market data powered by Alpha Vantage.
+                Get up-to-the-minute stock prices and market data powered by
+                Alpha Vantage.
               </p>
             </div>
-            <div className="rounded-xl bg-white/5 p-6 hover:bg-white/10 transition">
+            <div className="rounded-xl bg-white/5 p-6 transition hover:bg-white/10">
               <div className="mb-4 text-4xl">💼</div>
               <h3 className="mb-2 text-xl font-bold">Portfolio Tracking</h3>
               <p className="text-gray-400">
-                Monitor your holdings, track performance, and manage your virtual cash.
+                Monitor your holdings, track performance, and manage your
+                virtual cash.
               </p>
             </div>
-            <div className="rounded-xl bg-white/5 p-6 hover:bg-white/10 transition">
+            <div className="rounded-xl bg-white/5 p-6 transition hover:bg-white/10">
               <div className="mb-4 text-4xl">⚡</div>
               <h3 className="mb-2 text-xl font-bold">Instant Execution</h3>
               <p className="text-gray-400">
-                Buy and sell stocks instantly with our seamless trading interface.
+                Buy and sell stocks instantly with our seamless trading
+                interface.
               </p>
             </div>
           </div>

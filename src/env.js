@@ -14,6 +14,10 @@ export const env = createEnv({
     BETTER_AUTH_URL: z.string().url().default("http://localhost:3000"),
     MONGODB_URI: z.string().url(),
     ALPHA_VANTAGE_API_KEY: z.string(),
+    GMAIL_USER: z.string(),
+    GMAIL_PASS: z.string(),
+    SMTP_HOST: z.string(),
+    SMTP_PORT: z.string(), // Keeping as string to avoid parsing issues, can convert to number if needed
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -37,6 +41,10 @@ export const env = createEnv({
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
     MONGODB_URI: process.env.MONGODB_URI,
     ALPHA_VANTAGE_API_KEY: process.env.ALPHA_VANTAGE_API_KEY,
+    GMAIL_USER: process.env.GMAIL_USER,
+    GMAIL_PASS: process.env.GMAIL_PASS,
+    SMTP_HOST: process.env.SMTP_HOST,
+    SMTP_PORT: process.env.SMTP_PORT,
     NODE_ENV: process.env.NODE_ENV,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },

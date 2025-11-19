@@ -60,4 +60,33 @@ export const stockRouter = createTRPCRouter({
                 changePercent: quote["10. change percent"],
             };
         }),
+
+    getHistory: protectedProcedure
+        .input(z.object({ symbol: z.string().min(1) }))
+        .query(async ({ input }) => {
+            const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${input.symbol}&apikey=${env.ALPHA_VANTAGE_API_KEY}`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data["Note"]) {
+                throw new TRPCError({
+                    code: "TOO_MANY_REQUESTS",
+                    message: "API limit reached",
+                });
+            }
+
+            const timeSeries = data["Time Series (Daily)"];
+            if (!timeSeries) {
+                return [];
+            }
+
+            // Get last 30 days and format
+            return Object.entries(timeSeries)
+                .slice(0, 30)
+                .map(([date, values]: [string, any]) => ({
+                    date,
+                    price: parseFloat(values["4. close"]),
+                }))
+                .reverse();
+        }),
 });

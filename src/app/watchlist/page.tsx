@@ -3,6 +3,21 @@
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
+import {
+    Table,
+    TableBody,
+    TableCaption,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+                >
+    Remove
+                </Button >
+            </TableCell >
+        </TableRow >
+    );
+};
 
 export default function WatchlistPage() {
     const [symbol, setSymbol] = useState("");
@@ -15,18 +30,20 @@ export default function WatchlistPage() {
         onSuccess: () => {
             setSymbol("");
             utils.watchlist.getWatchlist.invalidate();
+            toast.success("Stock added to watchlist");
         },
         onError: (error) => {
-            alert(`Failed to add: ${error.message}`);
+            toast.error(`Failed to add: ${error.message}`);
         },
     });
 
     const removeMutation = api.watchlist.removeFromWatchlist.useMutation({
         onSuccess: () => {
             utils.watchlist.getWatchlist.invalidate();
+            toast.success("Stock removed from watchlist");
         },
         onError: (error) => {
-            alert(`Failed to remove: ${error.message}`);
+            toast.error(`Failed to remove: ${error.message}`);
         },
     });
 
@@ -40,65 +57,62 @@ export default function WatchlistPage() {
         <div className="container mx-auto p-8">
             <div className="mb-6 flex items-center justify-between">
                 <h1 className="text-3xl font-bold">Watchlist</h1>
-                <button
-                    onClick={() => router.push("/dashboard")}
-                    className="text-blue-500 hover:underline"
-                >
+                <Button variant="outline" onClick={() => router.push("/dashboard")}>
                     Back to Dashboard
-                </button>
+                </Button>
             </div>
 
-            <form onSubmit={handleAdd} className="mb-8 flex gap-4">
-                <input
-                    type="text"
-                    value={symbol}
-                    onChange={(e) => setSymbol(e.target.value)}
-                    placeholder="Enter symbol (e.g., AAPL)"
-                    className="rounded border p-2"
-                />
-                <button
-                    type="submit"
-                    disabled={addMutation.isPending}
-                    className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:opacity-50"
-                >
-                    Add Stock
-                </button>
-            </form>
+            <Card className="mb-8">
+                <CardHeader>
+                    <CardTitle>Add to Watchlist</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleAdd} className="flex gap-4">
+                        <Input
+                            type="text"
+                            value={symbol}
+                            onChange={(e) => setSymbol(e.target.value)}
+                            placeholder="Enter symbol (e.g., AAPL)"
+                            className="max-w-xs"
+                        />
+                        <Button type="submit" disabled={addMutation.isPending}>
+                            Add Stock
+                        </Button>
+                    </form>
+                </CardContent>
+            </Card>
 
-            {isLoading ? (
-                <p>Loading watchlist...</p>
-            ) : watchlist && watchlist.length > 0 ? (
-                <div className="overflow-x-auto">
-                    <table className="min-w-full bg-white border rounded-lg">
-                        <thead>
-                            <tr className="bg-gray-100 text-left">
-                                <th className="px-6 py-3 font-semibold">Symbol</th>
-                                <th className="px-6 py-3 font-semibold">Added At</th>
-                                <th className="px-6 py-3 font-semibold">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {watchlist.map((item: any) => (
-                                <tr key={item._id} className="border-t">
-                                    <td className="px-6 py-4">{item.symbol}</td>
-                                    <td className="px-6 py-4">{new Date(item.addedAt).toLocaleDateString()}</td>
-                                    <td className="px-6 py-4">
-                                        <button
-                                            onClick={() => removeMutation.mutate({ symbol: item.symbol })}
-                                            disabled={removeMutation.isPending}
-                                            className="text-red-500 hover:text-red-700"
-                                        >
-                                            Remove
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            ) : (
-                <p>Your watchlist is empty.</p>
-            )}
+            <Card>
+                <CardContent className="p-0">
+                    {isLoading ? (
+                        <div className="p-8 text-center">Loading watchlist...</div>
+                    ) : watchlist && watchlist.length > 0 ? (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Symbol</TableHead>
+                                    <TableHead>Price</TableHead>
+                                    <TableHead>Change</TableHead>
+                                    <TableHead>Trend (30d)</TableHead>
+                                    <TableHead>Added At</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {watchlist.map((item: any) => (
+                                    <WatchlistItem
+                                        key={item._id}
+                                        item={item}
+                                        onRemove={() => removeMutation.mutate({ symbol: item.symbol })}
+                                    />
+                                ))}
+                            </TableBody>
+                        </Table>
+                    ) : (
+                        <div className="p-8 text-center text-muted-foreground">Your watchlist is empty.</div>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 }

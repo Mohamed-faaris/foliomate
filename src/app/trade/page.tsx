@@ -3,11 +3,17 @@
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
+import { toast } from "sonner";
 
 export default function TradePage() {
     const [symbol, setSymbol] = useState("");
     const [quantity, setQuantity] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
+    const router = useRouter();
+    const utils = api.useUtils();
 
     const searchResults = api.stock.search.useQuery(
         { query: searchQuery },
@@ -21,30 +27,25 @@ export default function TradePage() {
 
     const buyMutation = api.portfolio.buyStock.useMutation({
         onSuccess: () => {
-            alert("Buy successful!");
+            toast.success("Buy successful!");
             utils.portfolio.getPortfolio.invalidate();
+            router.push("/dashboard");
         },
         onError: (error) => {
-            alert(`Buy failed: ${error.message}`);
+            toast.error(`Buy failed: ${error.message}`);
         },
     });
 
     const sellMutation = api.portfolio.sellStock.useMutation({
         onSuccess: () => {
-            alert("Sell successful!");
+            toast.success("Sell successful!");
             utils.portfolio.getPortfolio.invalidate();
+            router.push("/dashboard");
         },
         onError: (error) => {
-            alert(`Sell failed: ${error.message}`);
+            toast.error(`Sell failed: ${error.message}`);
         },
     });
-
-    const utils = api.useUtils();
-
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        // Trigger search via state
-    };
 
     const handleBuy = () => {
         if (!quote.data) return;
@@ -65,80 +66,96 @@ export default function TradePage() {
     };
 
     return (
-        <div className="container mx-auto p-8">
-            <h1 className="mb-8 text-3xl font-bold">Trade Stocks</h1>
+        <div className="container mx-auto flex min-h-screen items-center justify-center p-4">
+            <Card className="w-full max-w-md">
+                <CardHeader>
+                    <CardTitle>Trade Stocks</CardTitle>
+                    <CardDescription>Search for a stock and execute a trade.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Search Symbol</label>
+                        <Input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="e.g., IBM"
+                        />
+                        {searchResults.data && searchResults.data.length > 0 && (
+                            <ul className="max-h-40 overflow-y-auto rounded-md border bg-background p-2 shadow-sm">
+                                {searchResults.data.map((match: any) => (
+                                    <li
+                                        key={match.symbol}
+                                        className="cursor-pointer rounded-sm p-2 hover:bg-accent hover:text-accent-foreground"
+                                        onClick={() => {
+                                            setSymbol(match.symbol);
+                                            setSearchQuery("");
+                                        }}
+                                    >
+                                        <span className="font-bold">{match.symbol}</span> - {match.name}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
 
-            <div className="mb-8">
-                <h2 className="mb-4 text-xl font-semibold">Search Stock</h2>
-                <div className="flex gap-4">
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Enter symbol (e.g., IBM)"
-                        className="rounded border p-2"
-                    />
-                </div>
-                {searchResults.data && (
-                    <ul className="mt-4 border rounded p-4 bg-white">
-                        {searchResults.data.map((match: any) => (
-                            <li
-                                key={match.symbol}
-                                className="cursor-pointer p-2 hover:bg-gray-100"
-                                onClick={() => {
-                                    setSymbol(match.symbol);
-                                    setSearchQuery("");
-                                }}
-                            >
-                                {match.symbol} - {match.name}
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </div>
+                    {symbol && (
+                        <div className="rounded-md border p-4 bg-muted/50">
+                            <h3 className="text-lg font-bold mb-2">{symbol}</h3>
+                            {quote.isLoading ? (
+                                <p className="text-sm text-muted-foreground">Loading quote...</p>
+                            ) : quote.data ? (
+                                <div className="space-y-4">
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Price:</span>
+                                        <span className="font-mono font-bold">${quote.data.price}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Change:</span>
+                                        <span className={quote.data.change >= 0 ? "text-green-600" : "text-red-600"}>
+                                            {quote.data.change} ({quote.data.changePercent})
+                                        </span>
+                                    </div>
 
-            {symbol && (
-                <div className="rounded-lg border bg-white p-6 shadow-md">
-                    <h2 className="mb-4 text-2xl font-bold">{symbol}</h2>
-                    {quote.isLoading ? (
-                        <p>Loading quote...</p>
-                    ) : quote.data ? (
-                        <div>
-                            <p className="text-xl">Price: ${quote.data.price}</p>
-                            <p className={`text-lg ${quote.data.change >= 0 ? "text-green-600" : "text-red-600"}`}>
-                                Change: {quote.data.change} ({quote.data.changePercent})
-                            </p>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">Quantity</label>
+                                        <Input
+                                            type="number"
+                                            min="1"
+                                            value={quantity}
+                                            onChange={(e) => setQuantity(parseInt(e.target.value))}
+                                        />
+                                    </div>
 
-                            <div className="mt-6 flex items-center gap-4">
-                                <label className="font-semibold">Quantity:</label>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    value={quantity}
-                                    onChange={(e) => setQuantity(parseInt(e.target.value))}
-                                    className="w-20 rounded border p-2"
-                                />
-                                <button
-                                    onClick={handleBuy}
-                                    disabled={buyMutation.isPending}
-                                    className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600 disabled:opacity-50"
-                                >
-                                    Buy
-                                </button>
-                                <button
-                                    onClick={handleSell}
-                                    disabled={sellMutation.isPending}
-                                    className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600 disabled:opacity-50"
-                                >
-                                    Sell
-                                </button>
-                            </div>
+                                    <div className="flex gap-2 pt-2">
+                                        <Button
+                                            className="flex-1 bg-green-600 hover:bg-green-700"
+                                            onClick={handleBuy}
+                                            disabled={buyMutation.isPending}
+                                        >
+                                            Buy
+                                        </Button>
+                                        <Button
+                                            className="flex-1 bg-red-600 hover:bg-red-700"
+                                            onClick={handleSell}
+                                            disabled={sellMutation.isPending}
+                                        >
+                                            Sell
+                                        </Button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p className="text-sm text-destructive">Failed to load quote.</p>
+                            )}
                         </div>
-                    ) : (
-                        <p>Failed to load quote.</p>
                     )}
-                </div>
-            )}
+                </CardContent>
+                <CardFooter>
+                    <Button variant="ghost" className="w-full" onClick={() => router.push("/dashboard")}>
+                        Cancel
+                    </Button>
+                </CardFooter>
+            </Card>
         </div>
     );
 }

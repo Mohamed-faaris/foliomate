@@ -22,10 +22,11 @@ export default function Dashboard() {
         undefined,
         { enabled: !!session }
     );
-    const { data: transactions, isLoading: transactionsLoading } = api.portfolio.getTransactions.useQuery(
-        { limit: 5 },
+    const { data: transactionsData, isLoading: transactionsLoading } = api.portfolio.getTransactions.useQuery(
+        { limit: 5, skip: 0 },
         { enabled: !!session }
     );
+    const transactions = transactionsData?.transactions;
 
     const signOut = async () => {
         await authClient.signOut();

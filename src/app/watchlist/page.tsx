@@ -11,11 +11,79 @@ import {
     TableHead,
     TableHeader,
     TableRow,
+} from "~/components/ui/table";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { toast } from "sonner";
+import { Line, LineChart, ResponsiveContainer, YAxis } from "recharts";
+
+// Component to fetch and display price for a single symbol
+const WatchlistItem = ({ item, onRemove }: { item: any, onRemove: () => void }) => {
+    const quote = api.stock.getQuote.useQuery(
+        { symbol: item.symbol },
+        { refetchInterval: 60000 }
+    );
+
+    const history = api.stock.getHistory.useQuery(
+        { symbol: item.symbol },
+        { refetchInterval: false }
+    );
+
+    return (
+        <TableRow>
+            <TableCell className="font-medium">{item.symbol}</TableCell>
+            <TableCell>
+                {quote.isLoading ? (
+                    <span className="text-muted-foreground">Loading...</span>
+                ) : quote.data ? (
+                    <span className="font-mono">${quote.data.price}</span>
+                ) : (
+                    <span className="text-destructive">N/A</span>
+                )}
+            </TableCell>
+            <TableCell>
+                {quote.isLoading ? (
+                    <span className="text-muted-foreground">...</span>
+                ) : quote.data ? (
+                    <span className={quote.data.change >= 0 ? "text-green-600" : "text-red-600"}>
+                        {quote.data.change} ({quote.data.changePercent})
+                    </span>
+                ) : (
+                    <span className="text-destructive">N/A</span>
+                )}
+            </TableCell>
+            <TableCell className="w-[150px]">
+                {history.data && history.data.length > 0 ? (
+                    <div className="h-[40px] w-[120px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={history.data}>
+                                <Line
+                                    type="monotone"
+                                    dataKey="price"
+                                    stroke={quote.data?.change && quote.data.change >= 0 ? "#16a34a" : "#dc2626"}
+                                    strokeWidth={2}
+                                    dot={false}
+                                />
+                                <YAxis domain={['dataMin', 'dataMax']} hide />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+                ) : (
+                    <span className="text-xs text-muted-foreground">No data</span>
+                )}
+            </TableCell>
+            <TableCell>{new Date(item.addedAt).toLocaleDateString()}</TableCell>
+            <TableCell className="text-right">
+                <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={onRemove}
                 >
-    Remove
-                </Button >
-            </TableCell >
-        </TableRow >
+                    Remove
+                </Button>
+            </TableCell>
+        </TableRow>
     );
 };
 

@@ -149,23 +149,30 @@ export const portfolioRouter = createTRPCRouter({
         }),
 
     getTransactions: protectedProcedure
-        .input(z.object({ limit: z.number().optional() }).optional())
+        .input(
+            z.object({
+                limit: z.number().min(1).max(100).default(10),
+                skip: z.number().min(0).default(0),
+            })
+        )
         .query(async ({ ctx, input }) => {
             const client = await clientPromise;
             const db = client.db(dbName);
             const userId = ctx.session.user.id;
 
-            let cursor = db
+            const totalCount = await db.collection("transactions").countDocuments({ userId });
+
+            const transactions = await db
                 .collection("transactions")
                 .find({ userId })
-                .sort({ date: -1 });
+                .sort({ date: -1 })
+                .skip(input.skip)
+                .limit(input.limit)
+                .toArray();
 
-            if (input?.limit) {
-                cursor = cursor.limit(input.limit);
-            }
-
-            const transactions = await cursor.toArray();
-
-            return transactions;
+            return {
+                transactions,
+                totalCount,
+            };
         }),
 });

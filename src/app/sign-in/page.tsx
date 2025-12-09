@@ -23,41 +23,41 @@ export default function SignIn() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
-        <h1 className="mb-6 text-center text-2xl font-bold">Sign In</h1>
-        {error && <p className="mb-4 text-red-500">{error}</p>}
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
+      <div className="w-full max-w-md rounded-lg bg-white dark:bg-gray-800 p-8 shadow-md">
+        <h1 className="mb-6 text-center text-2xl font-bold text-gray-900 dark:text-gray-100">Sign In</h1>
+        {error && <p className="mb-4 text-red-500 dark:text-red-400">{error}</p>}
         <div className="mb-4">
-          <label className="mb-2 block text-sm font-bold text-gray-700">
+          <label className="mb-2 block text-sm font-bold text-gray-700 dark:text-gray-200">
             Email
           </label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:focus:ring-blue-400"
           />
         </div>
         <div className="mb-6">
-          <label className="mb-2 block text-sm font-bold text-gray-700">
+          <label className="mb-2 block text-sm font-bold text-gray-700 dark:text-gray-200">
             Password
           </label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:focus:ring-blue-400"
           />
         </div>
         <button
           onClick={signIn}
-          className="w-full rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className="w-full rounded-md bg-blue-500 dark:bg-blue-600 px-4 py-2 text-white hover:bg-blue-600 dark:hover:bg-blue-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-4 focus:outline-none"
         >
           Sign In
         </button>
         <p className="mt-4 text-center text-sm">
           Don&apos;t have an account?{" "}
-          <a href="/sign-up" className="text-blue-500 hover:underline">
+          <a href="/sign-up" className="text-blue-500 dark:text-blue-300 hover:underline">
             Sign Up
           </a>
         </p>
